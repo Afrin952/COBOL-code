@@ -1,0 +1,80 @@
+       IDENTIFICATION DIVISION.                                     
+       PROGRAM-ID. CBSDB2.                                          
+       ENVIRONMENT DIVISION.                                        
+       INPUT-OUTPUT SECTION.                                        
+       FILE-CONTROL.                                                
+           SELECT ACCTFILE ASSIGN TO ACCTVS                         
+               ORGANIZATION IS INDEXED                              
+               ACCESS MODE IS DYNAMIC                               
+               RECORD KEY IS AF-ACCT-NO.                            
+       DATA DIVISION.                                               
+       FILE SECTION.                                                
+       FD ACCTFILE.                                                 
+       01 ACCT-REC.                                                 
+           05 AF-ACCT-NO   PIC X(10).                               
+           05 AF-CUST-ID   PIC X(10).                               
+          05 AF-TYP       PIC X(2).                                    
+          05 AF-BAL       PIC 9(11).                                   
+          05 AF-STAT      PIC X(1).                                    
+          05 FILLER       PIC X(9).                                    
+      WORKING-STORAGE SECTION.                                         
+      EXEC SQL INCLUDE SQLCA END-EXEC.                                 
+      EXEC SQL INCLUDE MEM5 END-EXEC.                                  
+      01 WS-EOF PIC X VALUE 'N'.                                       
+      PROCEDURE DIVISION.                                              
+      MAIN-PARA.                                                       
+          OPEN INPUT ACCTFILE                                          
+          MOVE SPACES TO AF-ACCT-NO                                    
+          START ACCTFILE KEY >= AF-ACCT-NO                             
+              INVALID KEY                                              
+                  DISPLAY "NO RECORDS"                                 
+                  GO TO END-PARA                                       
+          END-START                                                    
+          PERFORM UNTIL WS-EOF = 'Y'                                   
+              READ ACCTFILE NEXT RECORD                        
+                  AT END                                       
+                      MOVE 'Y' TO WS-EOF                       
+                  NOT AT END                                   
+                      MOVE AF-ACCT-NO TO ACCT-NO               
+                      MOVE AF-CUST-ID TO CUST-ID               
+                      MOVE AF-TYP     TO TYP                   
+                      MOVE AF-BAL     TO BALANCE               
+                      MOVE AF-STAT    TO STAT                  
+                      EXEC SQL                                 
+                          INSERT INTO ACCT_SUMMARY             
+                          VALUES (:ACCT-NO,                    
+                                  :CUST-ID,                    
+                                  :TYP,                        
+                                  :BALANCE,                    
+                                  :STAT)                       
+                      END-EXEC                                 
+              END-READ                                         
+          END-PERFORM.                                             
+          EXEC SQL                                                 
+              DECLARE C1 CURSOR FOR                                
+              SELECT ACCT_NO, CUST_ID, TYP, BALANCE, STAT          
+              FROM ACCT_SUMMARY                                    
+          END-EXEC                                                 
+          EXEC SQL OPEN C1 END-EXEC                                
+          PERFORM UNTIL SQLCODE NOT = 0                            
+              EXEC SQL                                             
+                  FETCH C1 INTO                                    
+                      :ACCT-NO,                                    
+                      :CUST-ID,                                    
+                      :TYP,                                        
+                      :BALANCE,                                    
+                      :STAT                                        
+              END-EXEC                                             
+              IF SQLCODE = 0                                       
+                  DISPLAY "------------------------"               
+                   DISPLAY "ACCT : " ACCT-NO                
+                   DISPLAY "CUST : " CUST-ID                
+                   DISPLAY "TYPE : " TYP                    
+                   DISPLAY "BAL  : " BALANCE                
+                   DISPLAY "STAT : " STAT                   
+               END-IF                                       
+           END-PERFORM                                      
+           EXEC SQL CLOSE C1 END-EXEC.                      
+       END-PARA.                                            
+           CLOSE ACCTFILE                                   
+           DISPLAY "DB2 REPORT COMPLETED"                   
