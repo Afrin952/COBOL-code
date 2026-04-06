@@ -1,0 +1,64 @@
+       IDENTIFICATION DIVISION.                                   
+       PROGRAM-ID. CBSINT.                                        
+       ENVIRONMENT DIVISION.                                      
+       INPUT-OUTPUT SECTION.                                      
+       FILE-CONTROL.                                              
+           SELECT ACCTFILE ASSIGN TO ACCTVS                       
+               ORGANIZATION IS INDEXED                            
+               ACCESS MODE IS DYNAMIC                             
+               RECORD KEY IS AF-ACCT-NO.                          
+       DATA DIVISION.                                             
+       FILE SECTION.                                              
+       FD ACCTFILE.                                               
+       01 ACCT-REC.                                               
+           05 AF-ACCT-NO   PIC X(10).                             
+           05 AF-CUST-ID   PIC X(10).                             
+           05 AF-TYPE      PIC X(2).                            
+           05 AF-BAL       PIC 9(10)V99.                        
+           05 AF-STAT      PIC X(1).                            
+       WORKING-STORAGE SECTION.                                 
+       01 WS-EOF        PIC X VALUE 'N'.                        
+       01 WS-RATE       PIC 9V99 VALUE 0.                       
+       01 WS-INT        PIC 9(10)V99.                           
+       01 WS-BAL        PIC 9(10)V99.                           
+       PROCEDURE DIVISION.                                      
+       MAIN-PARA.                                               
+           OPEN I-O ACCTFILE                                    
+           MOVE 'N' TO WS-EOF                                   
+           MOVE LOW-VALUES TO AF-ACCT-NO                        
+           START ACCTFILE KEY >= AF-ACCT-NO                     
+               INVALID KEY                                      
+                   DISPLAY "NO RECORDS FOUND"                   
+                   GO TO END-PARA                               
+           END-START                                            
+           PERFORM UNTIL WS-EOF = 'Y'                                
+               READ ACCTFILE NEXT RECORD                             
+                   AT END                                            
+                       MOVE 'Y' TO WS-EOF                            
+                   NOT AT END                                        
+                       MOVE AF-BAL TO WS-BAL                         
+                       IF AF-TYPE = "SB"                             
+                           MOVE 0.04 TO WS-RATE                      
+                       ELSE                                          
+                           IF AF-TYPE = "FD"                         
+                               MOVE 0.06 TO WS-RATE                  
+                           ELSE                                      
+                               IF AF-TYPE = "RD"                     
+                                   MOVE 0.05 TO WS-RATE              
+                               ELSE                                  
+                                   MOVE 0 TO WS-RATE                 
+                               END-IF                                
+                           END-IF                                    
+                      END-IF                                  
+                      COMPUTE WS-INT = WS-BAL * WS-RATE       
+                      ADD WS-INT TO AF-BAL                    
+                      REWRITE ACCT-REC                        
+                      DISPLAY "INTEREST UPDATED FOR: "        
+                              AF-ACCT-NO                      
+                      DISPLAY "NEW BALANCE: " AF-BAL          
+              END-READ                                        
+          END-PERFORM.                                        
+      END-PARA.                                               
+          CLOSE ACCTFILE                                      
+          DISPLAY "INTEREST MODULE COMPLETED"                 
+          STOP RUN.                                           
