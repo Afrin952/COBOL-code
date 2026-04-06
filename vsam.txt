@@ -1,0 +1,32 @@
+//ACCJOB   JOB (123),'ACCOUNT OPEN',CLASS=A,MSGCLASS=A,    
+//         NOTIFY=&SYSUID                                  
+//STEP1 EXEC IGYWCL,SRC=CBSACC                             
+//COBOL.SYSIN DD DSN=Z71110.TEST.COBOL(CBSACC),DISP=SHR    
+//LKED.SYSLMOD DD DSN=Z71110.LOAD(CBSACC),DISP=SHR         
+//RUNSTEP EXEC PGM=CBSACC                                  
+//STEPLIB DD DSN=Z71110.LOAD,DISP=SHR                      
+//        DD DSN=CEE.SCEERUN,DISP=SHR                      
+//        DD DSN=CEE.SCEERUN2,DISP=SHR                     
+//CUSTVS  DD DSN=Z71110.CUST.VSAM.CLUSTER,DISP=SHR         
+//ACCTVS  DD DSN=Z71110.ACCT.VSAM.CLUSTER,DISP=SHR         
+//ACCIN   DD DSN=Z71110.INPUT.ACCT.DATA,DISP=SHR           
+//SYSOUT  DD SYSOUT=*                                      
+//SYSPRINT DD SYSOUT=*                                     
+//SYSUDUMP DD SYSOUT=*                                     
+
+
+//VSAMCRT JOB (ACCT),'VSAM CREATE',CLASS=A,MSGCLASS=X,   
+//             NOTIFY=&SYSUID                            
+//STEP1   EXEC PGM=IDCAMS                                
+//SYSPRINT DD SYSOUT=*                                   
+//SYSIN    DD *                                          
+  DEFINE CLUSTER (NAME(Z71110.ACCT.VSAM.CLUSTER) -       
+        INDEXED -                                        
+        KEYS(10 0) -                                     
+        RECORDSIZE(43 43) -                              
+        CISZ(4096) -                                     
+        TRACKS(2 2) -                                    
+        FREESPACE(10 10)) -                              
+        DATA (NAME(Z71110.ACCT.VSAM.DATA)) -             
+        INDEX (NAME(Z71110.ACCT.VSAM.INDEX))             
+/*                                                                
