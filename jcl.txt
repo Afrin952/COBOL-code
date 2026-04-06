@@ -1,0 +1,145 @@
+//CUSTJOB  JOB (123),'CBS-PROJECT',CLASS=A,MSGCLASS=A,     
+//         NOTIFY=&SYSUID                                  
+//STEP1 EXEC IGYWCL,SRC=CBSCUST                            
+//COBOL.SYSIN DD DSN=Z71110.TEST.COBOL(CBSCUST),DISP=SHR   
+                                                           
+//LKED.SYSLMOD DD DSN=Z71110.LOAD(CBSCUST),DISP=SHR        
+//RUNSTEP EXEC PGM=CBSCUST                                 
+//STEPLIB DD DSN=Z71110.LOAD,DISP=SHR                      
+//        DD DSN=CEE.SCEERUN,DISP=SHR                      
+//        DD DSN=CEE.SCEERUN2,DISP=SHR                     
+//INFILE  DD DSN=Z71110.INPUT.CUST.DATA,DISP=SHR           
+//OUTFILE DD DSN=Z71110.CUST.VSAM.CLUSTER,DISP=OLD         
+//SYSOUT  DD SYSOUT=*                                      
+//SYSPRINT DD SYSOUT=*                                     
+//SYSUDUMP DD SYSOUT=*                                     
+
+
+//CUSTJOB  JOB (123),'CBS-PROJECT',CLASS=A,MSGCLASS=A,         
+//         NOTIFY=&SYSUID                                      
+//STEP1 EXEC IGYWCL,SRC=CBSINT                                 
+//COBOL.SYSIN DD DSN=Z71110.TEST.COBOL(CBSINT),DISP=SHR        
+//LKED.SYSLMOD DD DSN=Z71110.LOAD(CBSINT),DISP=SHR             
+//RUNSTEP EXEC PGM=CBSINT                                      
+//STEPLIB DD DSN=Z71110.LOAD,DISP=SHR                          
+//        DD DSN=CEE.SCEERUN,DISP=SHR                          
+//        DD DSN=CEE.SCEERUN2,DISP=SHR                         
+//ACCTVS  DD DSN=Z71110.ACCT.VSAM.CLUSTER,DISP=OLD             
+//SYSOUT  DD SYSOUT=*                                          
+//SYSPRINT DD SYSOUT=*                                         
+//SYSUDUMP DD SYSOUT=*                                         
+
+//CUSTJOB  JOB (123),'CBS-PROJECT',CLASS=A,MSGCLASS=A,   
+//         NOTIFY=&SYSUID                                
+//STEP1 EXEC IGYWCL,SRC=CBSREPT                          
+//COBOL.SYSIN DD DSN=Z71110.TEST.COBOL(CBSREPT),DISP=SHR 
+//LKED.SYSLMOD DD DSN=Z71110.LOAD(CBSREPT),DISP=SHR      
+//RUNSTEP EXEC PGM=CBSREPT                               
+//STEPLIB DD DSN=Z71110.LOAD,DISP=SHR                    
+//        DD DSN=CEE.SCEERUN,DISP=SHR                    
+//        DD DSN=CEE.SCEERUN2,DISP=SHR                   
+//CUSTVS   DD DSN=Z71110.CUST.VSAM.CLUSTER,DISP=SHR      
+//ACCTVS  DD DSN=Z71110.ACCT.VSAM.CLUSTER,DISP=OLD       
+//SYSOUT  DD SYSOUT=*                                    
+//SYSPRINT DD SYSOUT=*                                   
+//SYSUDUMP DD SYSOUT=*                                   
+
+ //CUSTJOB  JOB (123),'CBS-PROJECT',CLASS=A,MSGCLASS=A,           
+ //         NOTIFY=&SYSUID                                        
+ //STEP1 EXEC IGYWCL,SRC=CBSTRAN                                  
+ //COBOL.SYSIN DD DSN=Z71110.TEST.COBOL(CBSTRAN),DISP=SHR         
+                                                                  
+ //LKED.SYSLMOD DD DSN=Z71110.LOAD(CBSTRAN),DISP=SHR              
+ //RUNSTEP EXEC PGM=CBSTRAN                                       
+ //STEPLIB DD DSN=Z71110.LOAD,DISP=SHR                            
+ //        DD DSN=CEE.SCEERUN,DISP=SHR                            
+ //        DD DSN=CEE.SCEERUN2,DISP=SHR                           
+ //TRNIN     DD DSN=Z71110.INPUT.TRAN.DATA,DISP=SHR               
+ //ACCTVS  DD DSN=Z71110.ACCT.VSAM.CLUSTER,DISP=OLD               
+ //SYSOUT  DD SYSOUT=*                                            
+ //SYSPRINT DD SYSOUT=*                                           
+ //SYSUDUMP DD SYSOUT=*   
+
+
+//DB2COB JOB ,REGION=0M,MSGLEVEL=(2,1),CLASS=7
+//         EXPORT SYMLIST=(DB2COMP)
+//         SET DB2PGM=DB2COMP
+//COB EXEC PGM=IGYCRCTL,
+//        PARM=(NODYNAM,'BUF(12288)',SOURCE,NOXREF,
+//        SQL)
+//*       'SQL(''ATTACH(CAF)'')')
+//STEPLIB DD DSN=IGY640.SIGYCOMP,DISP=SHR
+//        DD DSN=CEE.SCEERUN,DISP=SHR
+//        DD DSN=CEE.SCEERUN2,DISP=SHR
+//        DD DSN=DSND10.DBDG.SDSNEXIT,DISP=SHR
+//        DD DSN=DSND10.SDSNLOAD,DISP=SHR
+//SYSLIB DD DSN=Z71110.TEST.DCLGEN,DISP=SHR
+//DBRMLIB DD DSN=Z71110.TEST.DBRM(DB2COMP),DISP=SHR
+//SYSIN   DD DSN=Z71110.TEST.COBOL(DB2COMP),DISP=SHR
+//SYSLIN  DD DSN=&&LOADSET,DISP=(MOD,PASS),UNIT=SYSDA,
+//        SPACE=(800,(500,500))
+//SYSPRINT DD SYSOUT=*
+//SYSUDUMP DD SYSOUT=*
+//SYSUT1 DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT2 DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT3 DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT4 DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT5 DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT6 DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT7 DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT8 DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT9 DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT10 DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT11 DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT12 DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT13 DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT14 DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSUT15 DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//SYSMDECK DD UNIT=SYSDA,SPACE=(800,(500,500),,,ROUND)
+//*
+//LKED    EXEC PGM=IEWBLINK,
+//           PARM='LIST,XREF,RENT,AMODE=31,RMODE=ANY'
+//SYSLIB   DD DSNAME=CEE.SCEELKEX,DISP=SHR
+//         DD DSNAME=CEE.SCEELKED,DISP=SHR
+//         DD DSNAME=DSND10.DBDG.SDSNEXIT,DISP=SHR
+//         DD DSNAME=DSND10.SDSNLOAD,DISP=SHR
+//SYSLIN   DD DSN=&&LOADSET,DISP=(OLD,DELETE)
+//SYSLMOD  DD DISP=SHR,
+//         DSN=Z71110.LOAD(DB2COMP)
+//SYSPRINT DD SYSOUT=*
+//SYSUDUMP DD SYSOUT=*
+//SYSUT1   DD UNIT=SYSDA,SPACE=(1024,(50,50))
+//SYSIN    DD *
+  INCLUDE SYSLIB(DSNALI)
+//*
+
+
+//BINDJOB JOB CLASS=7,MSGCLASS=X,NOTIFY=&SYSUID         
+//STEP1    EXEC PGM=IKJEFT01                            
+//STEPLIB  DD DSN=DSND10.SDSNLOAD,DISP=SHR              
+//DBRMLIB  DD DSN=Z71110.TEST.DBRM,DISP=SHR             
+//SYSUDUMP DD DUMMY                                     
+//SYSTSPRT DD SYSOUT=*                                  
+//SYSPRINT DD SYSOUT=*                                  
+//SYSTSIN  DD *,SYMBOLS=EXECSYS                         
+ DSN SYSTEM(DBDG)                                       
+ BIND PLAN(Z71110) PKLIST(Z71110.*) MEMBER(CBSDB2) -    
+      ACT(REPLACE) ISO(CS) ENCODING(EBCDIC)             
+/*                                                                                              
+
+
+//EMPJOB JOB CLASS=A,MSGCLASS=X,NOTIFY=&SYSUID   
+//STEP1 EXEC PGM=IKJEFT01                        
+//STEPLIB DD DSN=Z71110.LOAD,DISP=SHR            
+//        DD DSN=DSND10.SDSNLOAD,DISP=SHR        
+//SYSTSPRT DD SYSOUT=*                           
+//SYSPRINT DD SYSOUT=*                           
+//SYSUDUMP DD SYSOUT=*                           
+//ACCTVS DD DSN=Z71110.ACCT.VSAM.CLUSTER,        
+//        DISP=SHR                               
+//SYSTSIN DD *                                   
+  DSN SYSTEM(DBDG)                               
+  RUN PROGRAM(CBSDB2) PLAN(Z71110) -             
+  LIB('Z71110.LOAD')                             
+  END                                            
+/*                                      
