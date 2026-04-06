@@ -1,0 +1,59 @@
+       IDENTIFICATION DIVISION.                             
+       PROGRAM-ID. CBSCUST.                                 
+       ENVIRONMENT DIVISION.                                
+       INPUT-OUTPUT SECTION.                                
+       FILE-CONTROL.                                        
+           SELECT INFILE ASSIGN TO INFILE                   
+               ORGANIZATION IS SEQUENTIAL.                  
+           SELECT OUTFILE ASSIGN TO OUTFILE                 
+               ORGANIZATION IS INDEXED                      
+               ACCESS MODE IS DYNAMIC                       
+               RECORD KEY IS CUST-ID                        
+               FILE STATUS IS WS-FILE-STATUS.               
+       DATA DIVISION.                                       
+       FILE SECTION.                                        
+       FD  INFILE.                                          
+      01  IN-REC.                                                
+          05 IN-CUST-ID     PIC X(10).                           
+          05 IN-NAME        PIC X(30).                           
+          05 IN-DOB         PIC X(10).                           
+          05 IN-ADDRESS     PIC X(20).                           
+          05 IN-PHONE       PIC X(10).                           
+          05 IN-STATUS      PIC X(1).                            
+      FD  OUTFILE.                                               
+      01  OUT-REC.                                               
+          05 CUST-ID      PIC X(10).                             
+          05 CUST-NAME    PIC X(30).                             
+          05 DOB          PIC X(10).                             
+          05 CITY         PIC X(20).                             
+          05 PHONE        PIC X(10).                             
+          05 STAT         PIC X(1).                              
+      WORKING-STORAGE SECTION.                                   
+      01 WS-EOF             PIC X VALUE 'N'.                     
+      01 WS-FILE-STATUS     PIC XX.                              
+       PROCEDURE DIVISION.                                           
+       MAIN-PARA.                                                    
+           OPEN INPUT INFILE                                         
+                OUTPUT OUTFILE                                       
+           PERFORM UNTIL WS-EOF = 'Y'                                
+               READ INFILE                                           
+                   AT END                                            
+                       MOVE 'Y' TO WS-EOF                            
+                   NOT AT END                                        
+                       PERFORM PROCESS-REC                           
+               END-READ                                              
+           END-PERFORM                                               
+           CLOSE INFILE OUTFILE                                      
+           STOP RUN.                                                 
+       PROCESS-REC.                                                  
+           MOVE IN-CUST-ID  TO CUST-ID                               
+           MOVE IN-NAME     TO CUST-NAME                             
+           MOVE IN-DOB      TO DOB                                   
+          MOVE IN-ADDRESS  TO CITY                        
+          MOVE IN-PHONE    TO PHONE                       
+          MOVE IN-STATUS   TO STAT                        
+          WRITE OUT-REC                                   
+              INVALID KEY                                 
+                  DISPLAY "DUPLICATE CUSTOMER: " CUST-ID  
+          END-WRITE.                                      
+

@@ -1,2 +1,0 @@
-# COBOL-code
-COBOL
