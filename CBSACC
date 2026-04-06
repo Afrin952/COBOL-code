@@ -1,0 +1,77 @@
+       IDENTIFICATION DIVISION.                               
+       PROGRAM-ID. CBSACC.                                    
+       ENVIRONMENT DIVISION.                                  
+       INPUT-OUTPUT SECTION.                                  
+       FILE-CONTROL.                                          
+           SELECT CUSTFILE ASSIGN TO CUSTVS                   
+               ORGANIZATION IS INDEXED                        
+               ACCESS MODE IS DYNAMIC                         
+               RECORD KEY IS CF-CUST-ID.                      
+           SELECT ACCTFILE ASSIGN TO ACCTVS                   
+               ORGANIZATION IS INDEXED                        
+               ACCESS MODE IS DYNAMIC                         
+               RECORD KEY IS AF-ACCT-NO.                      
+           SELECT INFILE ASSIGN TO ACCIN                      
+               ORGANIZATION IS SEQUENTIAL.                    
+       DATA DIVISION.                                                
+       FILE SECTION.                                                 
+       FD CUSTFILE.                                                  
+       01 CUST-REC.                                                  
+           05 CF-CUST-ID   PIC X(10).                                
+           05 CF-NAME      PIC X(30).                                
+           05 CF-DOB       PIC X(10).                                
+           05 CF-CITY      PIC X(20).                                
+           05 CF-PHONE     PIC X(10).                                
+           05 CF-STAT      PIC X(1).                                 
+       FD ACCTFILE.                                                  
+       01 ACCT-REC.                                                  
+           05 AF-ACCT-NO   PIC X(10).                                
+           05 AF-CUST-ID   PIC X(10).                                
+           05 AF-TYPE      PIC X(2).                                 
+           05 AF-BAL       PIC 9(10)V99.                             
+           05 AF-STAT      PIC X(1).                                 
+       FD INFILE.                                                    
+       01 IN-REC.                                                   
+          05 IN-ACCT-NO  PIC X(10).                                 
+          05 IN-CUST-ID  PIC X(10).                                 
+          05 IN-TYPE     PIC X(2).                                  
+          05 IN-BAL      PIC 9(11).                                 
+       WORKING-STORAGE SECTION.                                     
+       01 WS-EOF        PIC X VALUE 'N'.                            
+       01 WS-FLAG       PIC X VALUE 'N'.                            
+       PROCEDURE DIVISION.                                          
+       MAIN-PARA.                                                   
+           OPEN INPUT INFILE                                        
+           OPEN INPUT CUSTFILE                                      
+           OPEN I-O   ACCTFILE                                      
+           PERFORM UNTIL WS-EOF = 'Y'                               
+               READ INFILE                                          
+                   AT END                                           
+                       MOVE 'Y' TO WS-EOF                           
+                   NOT AT END                                       
+                       MOVE 'N' TO WS-FLAG                              
+                       MOVE IN-CUST-ID TO CF-CUST-ID                    
+                       READ CUSTFILE                                    
+                           INVALID KEY                                  
+                               DISPLAY "CUSTOMER NOT FOUND: " IN-CUST-ID
+                                MOVE 'N' TO WS-FLAG                     
+                           NOT INVALID KEY                              
+                               MOVE 'Y' TO WS-FLAG                      
+                       END-READ                                         
+                       IF WS-FLAG = 'N'                                 
+                           MOVE IN-ACCT-NO TO AF-ACCT-NO                
+                           MOVE IN-CUST-ID TO AF-CUST-ID                
+                           MOVE IN-TYPE    TO AF-TYPE                   
+                           MOVE IN-BAL     TO AF-BAL                    
+                           MOVE 'A'        TO AF-STAT                   
+                           WRITE ACCT-REC                               
+                               INVALID KEY                              
+                                   DISPLAY "ACCOUNT ALREADY EXISTS: "   
+                                          IN-ACCT-NO   
+                          END-WRITE                    
+                      END-IF                           
+              END-READ                                 
+          END-PERFORM                                  
+          CLOSE INFILE CUSTFILE ACCTFILE               
+          DISPLAY "ACCOUNT OPENING COMPLETED"          
+          STOP RUN.                                    
