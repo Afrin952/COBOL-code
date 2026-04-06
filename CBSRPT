@@ -1,0 +1,80 @@
+       IDENTIFICATION DIVISION.                            
+       PROGRAM-ID. CBSREPT.                                
+       ENVIRONMENT DIVISION.                               
+       INPUT-OUTPUT SECTION.                               
+       FILE-CONTROL.                                       
+           SELECT CUSTFILE ASSIGN TO CUSTVS                
+               ORGANIZATION IS INDEXED                     
+               ACCESS MODE IS DYNAMIC                      
+               RECORD KEY IS CF-CUST-ID.                   
+           SELECT ACCTFILE ASSIGN TO ACCTVS                
+               ORGANIZATION IS INDEXED                     
+               ACCESS MODE IS DYNAMIC                      
+               RECORD KEY IS AF-ACCT-NO.                   
+       DATA DIVISION.                                      
+       FILE SECTION.                                       
+      FD CUSTFILE.                                     
+      01 CUST-REC.                                     
+          05 CF-CUST-ID   PIC X(10).                   
+          05 CF-NAME      PIC X(30).                   
+          05 CF-DOB       PIC X(10).                   
+          05 CF-CITY      PIC X(20).                   
+          05 CF-PHONE     PIC X(10).                   
+          05 CF-STAT      PIC X(1).                    
+      FD ACCTFILE.                                     
+      01 ACCT-REC.                                     
+          05 AF-ACCT-NO   PIC X(10).                   
+          05 AF-CUST-ID   PIC X(10).                   
+          05 AF-TYPE      PIC X(2).                    
+          05 AF-BAL       PIC 9(10)V99.                
+          05 AF-STAT      PIC X(1).                    
+      WORKING-STORAGE SECTION.                         
+      01 WS-CUST-ID   PIC X(10).                       
+      01 WS-ACCT-NO   PIC X(10).                       
+      01 WS-EOF       PIC X VALUE 'N'.                               
+      PROCEDURE DIVISION.                                            
+      MAIN-PARA.                                                     
+          DISPLAY "ENTER CUSTOMER ID: "                              
+          ACCEPT WS-CUST-ID                                          
+          OPEN INPUT CUSTFILE ACCTFILE                               
+          MOVE WS-CUST-ID TO CF-CUST-ID                              
+          READ CUSTFILE                                              
+              INVALID KEY                                            
+                  DISPLAY "CUSTOMER NOT FOUND"                       
+                  GO TO END-PARA                                     
+          END-READ                                                   
+          DISPLAY "----------------------------------"               
+          DISPLAY "CUSTOMER MINI STATEMENT"                          
+          DISPLAY "----------------------------------"               
+          DISPLAY "CUSTOMER ID : " CF-CUST-ID                        
+          DISPLAY "NAME        : " CF-NAME                           
+          DISPLAY "CITY        : " CF-CITY                           
+           DISPLAY "PHONE       : " CF-PHONE                            
+           DISPLAY "----------------------------------"                 
+           MOVE WS-CUST-ID TO AF-CUST-ID                                
+           MOVE LOW-VALUES TO AF-ACCT-NO                                
+           START ACCTFILE KEY >= AF-ACCT-NO                             
+               INVALID KEY                                              
+                   DISPLAY "NO ACCOUNT FOUND"                           
+                   GO TO END-PARA                                       
+           END-START                                                    
+           PERFORM UNTIL WS-EOF = 'Y'                                   
+               READ ACCTFILE NEXT RECORD                                
+                   AT END                                               
+                       MOVE 'Y' TO WS-EOF                               
+                   NOT AT END                                           
+                       IF AF-CUST-ID NOT = WS-CUST-ID                   
+                           MOVE 'Y' TO WS-EOF                           
+                       ELSE                                             
+                           DISPLAY "ACCOUNT NO : " AF-ACCT-NO           
+                           DISPLAY "TYPE        : " AF-TYPE             
+                           DISPLAY "BALANCE     : " AF-BAL              
+                           DISPLAY "STATUS      : " AF-STAT             
+                           DISPLAY "----------------------------------" 
+                       END-IF                                           
+               END-READ                                                 
+           END-PERFORM.                                                 
+       END-PARA.                                                        
+           CLOSE CUSTFILE ACCTFILE                                      
+           DISPLAY "REPORT COMPLETED"                                   
+           STOP RUN.                                                    
