@@ -1,0 +1,73 @@
+       IDENTIFICATION DIVISION.                           
+       PROGRAM-ID. CBSTRAN.                               
+       ENVIRONMENT DIVISION.                              
+       INPUT-OUTPUT SECTION.                              
+       FILE-CONTROL.                                      
+           SELECT ACCTFILE ASSIGN TO ACCTVS               
+               ORGANIZATION IS INDEXED                    
+               ACCESS MODE IS DYNAMIC                     
+               RECORD KEY IS AF-ACCT-NO.                  
+           SELECT TRNFILE ASSIGN TO TRNIN                 
+               ORGANIZATION IS SEQUENTIAL.                
+       DATA DIVISION.                                     
+       FILE SECTION.                                      
+       FD ACCTFILE.                                       
+       01 ACCT-REC.                                       
+           05 AF-ACCT-NO   PIC X(10).                       
+           05 AF-CUST-ID   PIC X(10).                       
+           05 AF-TYPE      PIC X(2).                        
+           05 AF-BAL       PIC 9(10)V99.                    
+           05 AF-STAT      PIC X(1).                        
+       FD TRNFILE.                                          
+       01 TRN-REC.                                          
+           05 TRN-ACCT-NO  PIC X(10).                       
+           05 TRN-TYPE     PIC X.                           
+           05 TRN-AMOUNT   PIC 9(10).                       
+       WORKING-STORAGE SECTION.                             
+       01 WS-EOF          PIC X VALUE 'N'.                  
+       01 WS-AMOUNT       PIC 9(10)V99.                     
+       01 WS-BALANCE      PIC 9(10)V99.                     
+       PROCEDURE DIVISION.                                  
+       MAIN-PARA.                                           
+           OPEN INPUT TRNFILE                               
+           OPEN I-O ACCTFILE                                
+           PERFORM UNTIL WS-EOF = 'Y'                                   
+               READ TRNFILE                                             
+                   AT END                                               
+                       MOVE 'Y' TO WS-EOF                               
+                   NOT AT END                                           
+                       MOVE TRN-ACCT-NO TO AF-ACCT-NO                   
+                       READ ACCTFILE                                    
+                           INVALID KEY                                  
+                               DISPLAY "ACCOUNT NOT FOUND: "            
+                                       TRN-ACCT-NO                      
+                           NOT INVALID KEY                              
+                               MOVE AF-BAL TO WS-BALANCE                
+                               MOVE TRN-AMOUNT TO WS-AMOUNT             
+                               IF TRN-TYPE = 'D'                        
+                                   ADD WS-AMOUNT TO WS-BALANCE          
+                                   DISPLAY "DEPOSIT DONE: "             
+                                           TRN-ACCT-NO                  
+                               ELSE                                     
+                                  IF WS-BALANCE < WS-AMOUNT            
+                                      DISPLAY "INSUFFICIENT BALANCE: " 
+                                              TRN-ACCT-NO              
+                                  ELSE                                 
+                                      SUBTRACT WS-AMOUNT               
+                                          FROM WS-BALANCE              
+                                      DISPLAY "WITHDRAW DONE: "        
+                                              TRN-ACCT-NO              
+                                  END-IF                               
+                              END-IF                                   
+                              MOVE WS-BALANCE TO AF-BAL                
+                              REWRITE ACCT-REC                         
+                                  INVALID KEY                          
+                                      DISPLAY "UPDATE FAILED: "        
+                                              TRN-ACCT-NO              
+                              END-REWRITE                              
+                      END-READ                                         
+              END-READ                                                 
+          END-PERFORM                            
+          CLOSE TRNFILE ACCTFILE                 
+          DISPLAY "TRANSACTION MODULE COMPLETED" 
+          STOP RUN.                              
